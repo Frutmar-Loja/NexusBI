@@ -1,0 +1,6 @@
+{
+  "name": "NexusBI - Excel to Interactive Power BI Dashboard",
+  "description": "Transforme planilhas do Excel em dashboards Power BI interativos com visualização automática, filtros cruzados e exportação em tempo real.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
