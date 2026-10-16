@@ -1667,24 +1667,23 @@ function auditCRMInsights(
     category: duplicateCount > 0 ? 'quality_alert' : 'verified_fact',
     type: duplicateCount === 0 ? 'highlight' : 'risk',
     title: duplicateCount === 0
-      ? `Validação Documental: Unicidade de CPF/CNPJ (${validDocCount} Registros)`
-      : `Alerta Documental: ${duplicateCount} Duplicidades de CPF/CNPJ Detectadas`,
+      ? `Validação Documental: 0 Duplicidades (${validDocCount} Registros)`
+      : `Alerta Documental: ${duplicateCount} Duplicidades de CPF/CNPJ`,
     description: duplicateCount === 0
-      ? `Auditoria de sintaxe e unicidade em ${totalRows} identificadores (${docCol?.label || 'CPF/CNPJ'}): 0 duplicidades de identificador detectadas na base e ${validDocPct.toFixed(1)}% dos documentos com padrão sintático de máscara (11 dígitos para CPF ou 14 para CNPJ). Ressalva técnica: a validação de formato e unicidade no arquivo confirma integridade de dados locais, mas não substitui a consulta cadastral na Receita Federal ou conferência de certidões fiscais.`
-      : `Detectadas ${duplicateCount} ocorrências de documentos repetidos em diferentes registros cadastrais. Essa inconsistência pode gerar duplicidade de lançamentos contábeis e exige unificação no banco de dados.`,
+      ? `0 duplicidades em ${totalRows} documentos. Formato sintático válido em ${validDocPct.toFixed(1)}% dos identificadores locais.`
+      : `${duplicateCount} documentos repetidos identificados na base cadastral, demandando saneamento no banco de dados.`,
     metricBadge: duplicateCount === 0 ? '0 duplicidades' : `${duplicateCount} duplicados`,
     importance: 'medium',
-    evidence: `Validação algorítmica de unicidade e sintaxe em "${docCol?.label || 'CPF / CNPJ'}"`,
+    evidence: `Validação algorítmica de unicidade em "${docCol?.label || 'CPF / CNPJ'}"`,
     verifiableFacts: [
       `Identificadores auditados: ${totalRows}`,
       `Sintaxe CPF/CNPJ válida: ${validDocCount} (${validDocPct.toFixed(0)}%)`,
       `Duplicidades encontradas: ${duplicateCount}`,
-      `Cadastros com contato preenchido: ${totalRows - incompleteCount} (${(((totalRows - incompleteCount) / totalRows) * 100).toFixed(0)}%)`,
-      'Aviso: Validação fiscal oficial (Receita/Sintegra) requer consulta externa aos órgãos emissores'
+      'Aviso: Regularidade fiscal e jurídica requer consulta externa aos órgãos oficiais'
     ],
     businessImpact: duplicateCount === 0
-      ? 'Integridade estrutural da base assegurada contra cadastros duplicados; conformidade fiscal e jurídica deve ser validada nos órgãos competentes.'
-      : 'Risco de inconsistência tributária e cobranças concorrentes.'
+      ? 'Integridade estrutural da base assegurada contra cadastros duplicados.'
+      : 'Risco de inconsistência cadastral e cobranças concorrentes.'
   });
 
   // Alerta de Qualidade para contatos incompletos
@@ -1693,14 +1692,14 @@ function auditCRMInsights(
       id: 'crm_incomplete_contacts_alert',
       category: 'quality_alert',
       type: 'risk',
-      title: `Alerta de Qualidade: ${incompleteCount} Cadastros sem Contato`,
-      description: `${incompleteCount} clientes (${(((incompleteCount) / totalRows) * 100).toFixed(1)}% da base) não possuem e-mail ou contato cadastrado na planilha, demandando campanha de saneamento para evitar falhas de comunicação.`,
+      title: `Qualidade Cadastral: ${incompleteCount} sem Contato`,
+      description: `${incompleteCount} clientes (${(((incompleteCount) / totalRows) * 100).toFixed(1)}% da base) não possuem e-mail ou contato informado na planilha.`,
       metricBadge: `${incompleteCount} incompletos`,
       importance: 'medium',
-      evidence: 'Auditoria de campos em colunas de contato',
+      evidence: 'Auditoria de preenchimento em colunas de contato',
       verifiableFacts: [
         `Cadastros incompletos: ${incompleteCount} de ${totalRows} (${(((incompleteCount) / totalRows) * 100).toFixed(1)}%)`,
-        `Cadastros com contato íntegro: ${totalRows - incompleteCount} (${(((totalRows - incompleteCount) / totalRows) * 100).toFixed(1)}%)`
+        `Cadastros completos: ${totalRows - incompleteCount} (${(((totalRows - incompleteCount) / totalRows) * 100).toFixed(1)}%)`
       ],
       actionableStep: 'Iniciar rotina de enriquecimento cadastral com os clientes sem contato informado.',
       businessImpact: 'Prevenção de perdas operacionais por falta de canal de comunicação.'
@@ -1724,22 +1723,19 @@ function auditCRMInsights(
       id: 'crm_economic_profile',
       category: 'verified_fact',
       type: 'trend',
-      title: `Valor da Carteira: ${formatCurrency(totalVal)} (${monetaryCol.label})`,
-      description: `O montante total avaliado em ${monetaryCol.label} soma ${formatCurrency(totalVal)}, resultando em média de ${formatCurrency(avgVal)} por cliente. Os top 5 clientes concentram ${formatCurrency(top5Val)} (${top5Pct.toFixed(1)}% da carteira). Contas com status ativo sustentam ${formatCurrency(activeVal)} (${((activeVal / (totalVal || 1)) * 100).toFixed(1)}% do total), com média de ${formatCurrency(activeAvg)}/conta${pendingCount > 0 ? `, comparado a ${formatCurrency(pendingAvg)} nas contas com pendência/bloqueio` : ''}.`,
+      title: `Valor da Carteira: ${formatCurrency(totalVal)}`,
+      description: `Carteira totaliza ${formatCurrency(totalVal)} (média de ${formatCurrency(avgVal)}/cliente). Top 5 clientes concentram ${top5Pct.toFixed(1)}%.`,
       metricBadge: `Média: ${formatCurrency(avgVal)}`,
       importance: 'medium',
       evidence: `Consolidado de ${totalRows} contas na coluna "${monetaryCol.label}"`,
       verifiableFacts: [
         `LTV Consolidado: ${formatCurrency(totalVal)}`,
         `Ticket Médio: ${formatCurrency(avgVal)} por conta`,
-        `Top 5 clientes: ${formatCurrency(top5Val)} (${top5Pct.toFixed(1)}%)`,
-        pendingCount > 0
-          ? `Média Ativo (${formatCurrency(activeAvg)}) vs Pendente (${formatCurrency(pendingAvg)})`
-          : `Média em Contas Ativas: ${formatCurrency(activeAvg)}/conta`
+        `Top 5 clientes: ${formatCurrency(top5Val)} (${top5Pct.toFixed(1)}%)`
       ],
       businessImpact: pendingCount > 0
-        ? 'Alta concentração de valor nas contas ativas; saneamento de pendências documentais destrava liquidez.'
-        : 'Volume concentrado em contas ativas; monitoramento contínuo de retenção e conformidade cadastral.'
+        ? 'Saneamento de contas pendentes destrava liquidez da carteira.'
+        : 'Volume concentrado em contas ativas com boa liquidez.'
     });
   }
 
@@ -1772,19 +1768,17 @@ function auditCRMInsights(
         id: 'crm_client_maturity',
         category: 'verified_fact',
         type: 'highlight',
-        title: `Maturidade: ${avgMaturity} Anos de Tempo Médio (Ano ${avgYear})`,
-        description: `Auditoria na coluna "${birthFoundingDateCol.label}": os clientes possuem idade/fundação média de ${avgMaturity} anos (ano médio de nascimento/fundação: ${avgYear}, variando de ${minYear} a ${maxYear}). ${matureCount} contas (${maturePct.toFixed(1)}%) têm mais de 10 anos de fundação/vida e ${youngCount} (${youngPct.toFixed(1)}%) têm até 3 anos. Nota de auditoria: esta coluna reflete a maturidade histórica da entidade e NÃO representa a data de adesão/cadastro comercial na sua empresa.`,
+        title: `Maturidade Média: ${avgMaturity} Anos (${avgYear})`,
+        description: `Maturidade média de ${avgMaturity} anos (ano médio ${avgYear}). ${maturePct.toFixed(0)}% das contas possuem ≥ 10 anos de vida/fundação.`,
         metricBadge: `Média: ${avgMaturity} anos`,
         importance: 'medium',
-        evidence: `Auditado em ${years.length} registros válidos na coluna "${birthFoundingDateCol.label}" (Atributo Cadastral)`,
+        evidence: `Auditado na coluna "${birthFoundingDateCol.label}" (Atributo Demográfico)`,
         verifiableFacts: [
-          `Ano médio apurado: ${avgYear} (${avgMaturity} anos de maturidade)`,
-          `Clientes consolidados (≥ 10 anos): ${matureCount} (${maturePct.toFixed(0)}%)`,
-          `Empresas/clientes recentes (≤ 3 anos): ${youngCount} (${youngPct.toFixed(0)}%)`,
-          `Período de fundação/nasc: ${minYear} a ${maxYear}`,
-          `Observação: Não representa data de adesão/cadastro comercial`
+          `Ano médio: ${avgYear} (${avgMaturity} anos de maturidade)`,
+          `Contas consolidadas (≥ 10 anos): ${matureCount} (${maturePct.toFixed(0)}%)`,
+          `Observação: Não representa data de adesão comercial`
         ],
-        businessImpact: 'Permite calibrar ofertas entre clientes consolidados/maduros e empresas em fase inicial.'
+        businessImpact: 'Permite calibrar ofertas entre clientes maduros e empresas em fase inicial.'
       });
 
       insights.push({
@@ -1792,10 +1786,10 @@ function auditCRMInsights(
         category: 'suggested_opportunity',
         type: 'recommendation',
         isHypothesis: true,
-        title: 'Hipótese Comercial: Estratégias por Faixa de Maturidade',
-        description: `Hipótese comercial: A presença de ${maturePct.toFixed(0)}% de contas com mais de 10 anos de fundação combinada a ${youngPct.toFixed(0)}% de empresas jovens sugere testar abordagens comerciais diferenciadas para retenção de clientes tradicionais e aceleração de novos negócios. Esta é uma hipótese estratégica e não um fato comprovado pela planilha.`,
+        title: 'Hipótese Comercial: Estratégias por Maturidade',
+        description: `Diferenciar ofertas comerciais entre contas maduras (≥10 anos) e jovens (≤3 anos) para maximizar conversão e LTV.`,
         metricBadge: 'Hipótese Comercial',
-        hypothesisDisclaimer: 'Hipótese de oferta e relacionamento por maturidade demográfica.',
+        hypothesisDisclaimer: 'Hipótese comercial sugerida — Requer avaliação e estudo de viabilidade interna.',
         importance: 'medium',
         actionableStep: 'Mapear produtos com maior aderência ao segmento consolidado vs empresas recentes.',
         businessImpact: 'Aumento de LTV e personalização de ofertas comerciais.'
@@ -1809,7 +1803,7 @@ function auditCRMInsights(
         category: 'verified_fact',
         type: 'trend',
         title: `Evolução de Novos Clientes: ${trend.formatted}`,
-        description: `Na comparação cronológica recente (${trend.periodLabel}) baseada na coluna de adesão "${registrationDateCol.label}", a entrada de novos clientes registrou variação de ${trend.formatted} (de ${formatNumber(trend.previousPeriodValue)} para ${formatNumber(trend.currentPeriodValue)} cadastros). O ritmo de aquisição demonstra ${trend.direction === 'up' ? 'aceleração na entrada de novas contas' : 'estabilização do ciclo de novas adesões'}.`,
+        description: `Novos cadastros variaram ${trend.formatted} no período (${formatNumber(trend.previousPeriodValue)} → ${formatNumber(trend.currentPeriodValue)} clientes).`,
         metricBadge: trend.formatted,
         importance: 'medium',
         evidence: `Série temporal auditada na coluna "${registrationDateCol.label}": ${trend.periodLabel}`,
@@ -1856,7 +1850,7 @@ function auditSalesFinancialInsights(
       category: 'verified_fact',
       type: 'highlight',
       title: `Concentração da Métrica: Top ${categoryAgg.length} (${top5Pct.toFixed(1)}%)`,
-      description: `A base total da métrica "${activeMetricCol.label}" soma ${formatCurrency(activeMetricTotal)} em ${salesSummary.uniqueOrdersCount} pedidos registrados (média bruta de ${formatCurrency(salesSummary.uniqueOrdersCount > 0 ? activeMetricTotal / salesSummary.uniqueOrdersCount : 0)}/pedido). ${salesSummary.hasCancellations ? `Excluindo cancelamentos e pendências, a receita realizada auditada é de ${formatCurrency(salesSummary.realizedRevenue)} em ${salesSummary.completedOrdersCount} pedidos faturados (ticket médio realizado de ${formatCurrency(avgTicket)}). ` : ''}Os ${categoryAgg.length} principais segmentos em ${primaryCategoryKey} concentram ${formatCurrency(top5Sum)} (${top5Pct.toFixed(1)}% da métrica), com "${topLeader.label}" liderando com ${formatCurrency(topLeader.value)} (${topLeader.percentage.toFixed(1)}% do total auditado).`,
+      description: `Os ${categoryAgg.length} principais segmentos concentram ${formatCurrency(top5Sum)} (${top5Pct.toFixed(1)}% do total). "${topLeader.label}" lidera com ${formatCurrency(topLeader.value)} (${topLeader.percentage.toFixed(1)}%).`,
       metricBadge: `Top ${categoryAgg.length}: ${top5Pct.toFixed(0)}%`,
       importance: 'high',
       evidence: `Auditado em ${totalRows} transações na métrica "${activeMetricCol.label}"`,
@@ -1877,8 +1871,8 @@ function auditSalesFinancialInsights(
       id: 'sales_cancellations_audit',
       category: 'quality_alert',
       type: 'risk',
-      title: `Alerta de Qualidade: ${salesSummary.canceledOrdersCount} Pedidos Cancelados (${salesSummary.cancellationRatePct.toFixed(1)}%)`,
-      description: `A auditoria identificou ${salesSummary.canceledOrdersCount} pedidos com status cancelado/estornado (${salesSummary.cancellationRatePct.toFixed(1)}% do volume total de ${salesSummary.uniqueOrdersCount} pedidos), representando perda de faturamento de ${formatCurrency(salesSummary.canceledLoss)}. Estes valores foram rigorosamente excluídos da receita realizada de ${formatCurrency(salesSummary.realizedRevenue)}.`,
+      title: `Cancelamentos: ${salesSummary.canceledOrdersCount} Pedidos (${salesSummary.cancellationRatePct.toFixed(1)}%)`,
+      description: `${salesSummary.canceledOrdersCount} pedidos cancelados (${salesSummary.cancellationRatePct.toFixed(1)}% do total), totalizando ${formatCurrency(salesSummary.canceledLoss)} desconsiderados da receita realizada.`,
       metricBadge: `${salesSummary.cancellationRatePct.toFixed(1)}% cancelados`,
       importance: 'high',
       evidence: `Auditado em ${salesSummary.uniqueOrdersCount} pedidos: ${salesSummary.canceledOrdersCount} cancelamentos`,
@@ -1897,7 +1891,7 @@ function auditSalesFinancialInsights(
       type: 'recommendation',
       isHypothesis: true,
       title: 'Hipótese Comercial: Recuperação de Pedidos Cancelados',
-      description: `Hipótese comercial: A taxa de cancelamento de ${salesSummary.cancellationRatePct.toFixed(1)}% (-${formatCurrency(salesSummary.canceledLoss)}) sugere que uma ação rápida de reengajamento comercial com ofertas alternativas ou resolução de dúvidas de estoque pode recuperar parcela dos pedidos perdidos. Esta é uma hipótese estratégica e não um fato comprovado pela planilha.`,
+      description: `Ação ágil de reengajamento comercial pode recuperar de 15% a 25% dos ${salesSummary.canceledOrdersCount} pedidos cancelados (-${formatCurrency(salesSummary.canceledLoss)}).`,
       metricBadge: 'Hipótese Comercial',
       hypothesisDisclaimer: 'Hipótese comercial sugerida — Requer avaliação de viabilidade com o time de vendas.',
       importance: 'medium',
@@ -1922,8 +1916,8 @@ function auditSalesFinancialInsights(
       id: 'sales_outliers_audited',
       category: 'quality_alert',
       type: 'risk',
-      title: `Auditoria IQR: ${anomalyReport.outlierCount} Pedidos Fora da Curva Normal`,
-      description: `A auditoria estatística IQR identificou ${anomalyReport.outlierCount} pedidos discrepantes (${anomalyReport.outlierPercentage.toFixed(1)}% dos registros) que superam o limiar superior de normalidade de ${formatCurrency(anomalyReport.upperBound)}. O registro mais expressivo foi "${clientName}" com ${formatCurrency(topVal)}${dateVal ? ` em ${dateVal}` : ''}, posicionando-se +${devPct}% acima da mediana geral (${formatCurrency(anomalyReport.median)}). Esse grupo pontual responde por ${formatCurrency(outlierSum)} (${outlierSharePct.toFixed(1)}% do volume total da métrica).`,
+      title: `Outliers IQR: ${anomalyReport.outlierCount} Pedidos Fora da Curva`,
+      description: `${anomalyReport.outlierCount} pedidos atípicos (${anomalyReport.outlierPercentage.toFixed(1)}%) superam o teto estatístico de ${formatCurrency(anomalyReport.upperBound)}. Maior valor: ${formatCurrency(topVal)}.`,
       metricBadge: `${anomalyReport.outlierCount} pedidos atípicos`,
       importance: 'high',
       evidence: `Cálculo IQR interquartil 1.5x: Teto estatístico de ${formatCurrency(anomalyReport.upperBound)}`,
@@ -1941,8 +1935,8 @@ function auditSalesFinancialInsights(
       id: 'sales_outliers_audited',
       category: 'verified_fact',
       type: 'highlight',
-      title: `Homogeneidade de Vendas: 0 Desvios Extremos`,
-      description: `Nenhuma transação ultrapassou o teto estatístico calculado de ${formatCurrency(anomalyReport?.upperBound || 0)}. A carteira de pedidos mantém dispersão regular e estável em torno da mediana (${formatCurrency(anomalyReport?.median || 0)}), sem distorções anômalas no período.`,
+      title: `Dispersão Estável: 0 Desvios Extremos`,
+      description: `Nenhuma transação superou o teto IQR de ${formatCurrency(anomalyReport?.upperBound || 0)}. A carteira mantém dispersão estável em torno da mediana (${formatCurrency(anomalyReport?.median || 0)}).`,
       metricBadge: `Dispersão estável`,
       importance: 'medium',
       evidence: `Cálculo IQR interquartil em ${totalRows} transações`,
@@ -1961,8 +1955,8 @@ function auditSalesFinancialInsights(
       id: 'sales_margin_efficiency',
       category: 'verified_fact',
       type: 'highlight',
-      title: `Margem Média Ponderada: ${salesSummary.weightedMarginPct.toFixed(1)}%`,
-      description: `A margem operacional ponderada consolidada da carteira é de ${salesSummary.weightedMarginPct.toFixed(1)}% calculada com base na receita realizada e custos reais auditados.`,
+      title: `Margem Ponderada: ${salesSummary.weightedMarginPct.toFixed(1)}%`,
+      description: `Margem operacional consolidada de ${salesSummary.weightedMarginPct.toFixed(1)}% apurada sobre a receita realizada auditada de ${formatCurrency(totalRevenue)}.`,
       metricBadge: `${salesSummary.weightedMarginPct.toFixed(0)}% margem`,
       importance: 'medium',
       evidence: `Auditado nas colunas de resultado e receita realizada`,
@@ -1979,8 +1973,8 @@ function auditSalesFinancialInsights(
         category: 'suggested_opportunity',
         type: 'recommendation',
         isHypothesis: true,
-        title: 'Hipótese Comercial: Reprecificação e Foco de Mix',
-        description: `Hipótese comercial: A dispersão de margens entre linhas de produtos sugere direcionar incentivos de vendas para o mix nobre e renegociar custos das categorias inferiores. Esta é uma hipótese estratégica e não um fato comprovado pela planilha.`,
+        title: 'Hipótese Comercial: Reprecificação e Mix',
+        description: `Priorizar incentivos comerciais no mix nobre pode elevar o resultado operacional sem aumentar custos proporcionais.`,
         metricBadge: 'Hipótese Comercial',
         hypothesisDisclaimer: 'Hipótese comercial sugerida — Requer estudo de elasticidade de preço.',
         importance: 'medium',
@@ -1999,8 +1993,8 @@ function auditSalesFinancialInsights(
         id: 'sales_growth_timeline',
         category: 'verified_fact',
         type: 'trend',
-        title: `Desempenho no Período: ${trend.formatted} MoM`,
-        description: `No comparativo entre os períodos recentes (${trend.periodLabel}), o faturamento variou ${trend.formatted} (de ${formatCurrency(trend.previousPeriodValue)} para ${formatCurrency(trend.currentPeriodValue)}, saldo líquido de ${deltaVal >= 0 ? '+' : ''}${formatCurrency(deltaVal)}). O ritmo comercial aponta ${trend.direction === 'up' ? 'expansão consistente da demanda' : 'acomodação após pico de fechamentos'}.`,
+        title: `Variação Temporal: ${trend.formatted} MoM`,
+        description: `Variação de ${trend.formatted} no período (${trend.periodLabel}), oscilando de ${formatCurrency(trend.previousPeriodValue)} para ${formatCurrency(trend.currentPeriodValue)}.`,
         metricBadge: trend.formatted,
         importance: 'high',
         evidence: `Série temporal auditada: ${trend.periodLabel}`,
@@ -2044,21 +2038,20 @@ function auditInventoryInsights(
     category: zeroedCount > 0 ? 'quality_alert' : 'verified_fact',
     type: zeroedCount > 0 ? 'risk' : 'highlight',
     title: zeroedCount > 0
-      ? `Alerta Operacional: ${zeroedCount} SKUs em Ruptura (${zeroedPct.toFixed(1)}%)`
-      : `Disponibilidade de Catálogo: 100% dos Itens Estocados`,
+      ? `Ruptura: ${zeroedCount} SKUs Zerados (${zeroedPct.toFixed(1)}%)`
+      : `Disponibilidade: 100% dos Itens Estocados`,
     description: zeroedCount > 0
-      ? `Foram identificados ${zeroedCount} produtos (${zeroedPct.toFixed(1)}% do catálogo) com saldo zero de estoque (incluindo ${zeroedNames.join(', ')}). A ausência desses itens gera perda de faturamento diário e cancelamento de pedidos.`
-      : `Todos os ${totalRows} produtos cadastrados possuem estoque físico positivo, garantindo atendimento contínuo aos pedidos sem ruptura.`,
+      ? `${zeroedCount} produtos com saldo zero (${zeroedPct.toFixed(1)}% do catálogo, ex: ${zeroedNames.slice(0, 2).join(', ')}), com risco de perda de vendas.`
+      : `Todos os ${totalRows} produtos cadastrados possuem saldo físico positivo em estoque.`,
     metricBadge: zeroedCount > 0 ? `${zeroedCount} zerados` : '100% abastecido',
     importance: 'high',
     evidence: `Auditado nas colunas "${stockCol?.label || 'Estoque'}" e "${statusCol?.label || 'Status'}"`,
     verifiableFacts: [
-      `Total de SKUs avaliados: ${totalRows}`,
-      `Itens com estoque zerado: ${zeroedCount} (${zeroedPct.toFixed(1)}%)`,
-      zeroedCount > 0 ? `Itens críticos: ${zeroedNames.join(', ')}` : 'Zero rupturas'
+      `Total de SKUs: ${totalRows}`,
+      `Itens zerados: ${zeroedCount} (${zeroedPct.toFixed(1)}%)`
     ],
-    actionableStep: zeroedCount > 0 ? `Emitir ordem de compra emergencial para reposição dos ${zeroedCount} SKUs zerados.` : undefined,
-    businessImpact: zeroedCount > 0 ? `Perda imediata de conversão de vendas em ${zeroedCount} itens.` : 'Capacidade de pronta entrega regular.'
+    actionableStep: zeroedCount > 0 ? `Emitir ordem de reposição emergencial para os ${zeroedCount} SKUs zerados.` : undefined,
+    businessImpact: zeroedCount > 0 ? `Perda imediata de conversão em ${zeroedCount} itens.` : 'Capacidade de pronta entrega regular.'
   });
 
   // 2. Capital Imobilizado
@@ -2072,13 +2065,13 @@ function auditInventoryInsights(
       category: 'verified_fact',
       type: 'highlight',
       title: `Patrimônio em Estoque: ${formatCurrency(totalVal)}`,
-      description: `O valor consolidado de inventário é de ${formatCurrency(totalVal)} em ${totalRows} itens.${topCat ? ` A categoria "${topCat.label}" concentra o maior volume financeiro com ${formatCurrency(topCat.value)} (${topCat.percentage.toFixed(1)}% do capital total estocado).` : ''}`,
+      description: `Valor total estocado é de ${formatCurrency(totalVal)}.${topCat ? ` Líder: "${topCat.label}" com ${formatCurrency(topCat.value)} (${topCat.percentage.toFixed(0)}%).` : ''}`,
       metricBadge: topCat ? `Top: ${topCat.percentage.toFixed(0)}%` : formatCurrency(totalVal),
       importance: 'medium',
       evidence: `Auditado sobre a coluna "${valCol.label}"`,
       verifiableFacts: [
         `Capital imobilizado total: ${formatCurrency(totalVal)}`,
-        topCat ? `Categoria líder: ${topCat.label} com ${formatCurrency(topCat.value)} (${topCat.percentage.toFixed(1)}%)` : ''
+        topCat ? `Categoria líder: ${topCat.label} (${formatCurrency(topCat.value)})` : ''
       ].filter(Boolean)
     });
 
@@ -2087,12 +2080,12 @@ function auditInventoryInsights(
       category: 'suggested_opportunity',
       type: 'recommendation',
       isHypothesis: true,
-      title: 'Oportunidade Sugerida: Calibragem de Ponto de Pedido (ROP)',
-      description: `Hipótese operacional: Sugere-se recalibrar os lotes de ressuprimento dos itens de curva A para reduzir capital retido em estoque e eliminar risco de rupturas sazonais. Esta é uma hipótese operacional e não um fato comprovado pela planilha.`,
+      title: 'Hipótese Operacional: Calibragem de ROP',
+      description: `Ajustar ponto de pedido e lote econômico na curva A para liberar capital de giro e mitigar rupturas.`,
       metricBadge: 'Hipótese Operacional',
       hypothesisDisclaimer: 'Hipótese de gestão de estoque e suprimentos.',
       importance: 'medium',
-      actionableStep: 'Calcular Lead Time médio dos fornecedores e aplicar fórmula de estoque de segurança dinâmico.',
+      actionableStep: 'Recalcular estoque de segurança dinâmico por fornecedor.',
       businessImpact: 'Redução de custos de armazenagem e liberação de fluxo de caixa.'
     });
   }
@@ -2143,17 +2136,16 @@ export function generateExecutiveInsights(
       id: 'causal_crossfilter',
       category: 'verified_fact',
       type: 'highlight',
-      title: `Efeito do Filtro em "${filterVal}"`,
-      description: `Ao isolar "${filterVal}" em ${filterCat}, este segmento responde por ${filteredCount} de ${baselineCount} registros (${sharePct.toFixed(1)}% da base total)${activeMetricCol.key !== '__count__' ? ` e ${formatValue(filteredMetricSum, activeMetricCol.type)} (${metricSharePct.toFixed(1)}% do volume consolidado)` : ''}. A média por registro neste grupo é de ${formatValue(filteredAvg, activeMetricCol.type)}, apresentando variação de ${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(1)}% frente à média global (${formatValue(baselineAvg, activeMetricCol.type)}).`,
+      title: `Filtro Ativo: "${filterVal}"`,
+      description: `"${filterVal}" responde por ${filteredCount} registros (${sharePct.toFixed(1)}%) e média de ${formatValue(filteredAvg, activeMetricCol.type)} (${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(1)}% vs média global).`,
       metricBadge: `${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(0)}% vs média global`,
       importance: 'high',
-      evidence: `Comparativo amostral: ${filteredCount} registros filtrados vs ${baselineCount} registros totais`,
+      evidence: `Comparativo amostral: ${filteredCount} filtrados vs ${baselineCount} totais`,
       verifiableFacts: [
-        `Registros no segmento: ${filteredCount} de ${baselineCount} (${sharePct.toFixed(1)}%)`,
-        `Média do grupo: ${formatValue(filteredAvg, activeMetricCol.type)} (vs global ${formatValue(baselineAvg, activeMetricCol.type)})`,
-        `Variação relativa: ${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(1)}%`
+        `Registros no segmento: ${filteredCount} (${sharePct.toFixed(1)}%)`,
+        `Média do grupo: ${formatValue(filteredAvg, activeMetricCol.type)} (vs global ${formatValue(baselineAvg, activeMetricCol.type)})`
       ],
-      businessImpact: `Segmento de alta relevância com desvio de ${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(1)}% sobre a média consolidada.`
+      businessImpact: `Segmento relevante com desvio de ${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(1)}% sobre a média consolidada.`
     });
   }
 
@@ -2179,13 +2171,13 @@ export function generateExecutiveInsights(
         id: 'generic_leader_audit',
         category: 'verified_fact',
         type: 'highlight',
-        title: `Liderança em ${primaryCategoryKey}: ${topCat.label} (${topPct.toFixed(1)}%)`,
-        description: `O segmento "${topCat.label}" lidera com ${formatValue(topCat.value, activeMetricCol.type)} (${topPct.toFixed(1)}% do total), superando o segundo colocado em +${categoryAgg[1] ? ((topCat.value - categoryAgg[1].value) / (categoryAgg[1].value || 1) * 100).toFixed(0) : 0}%. O volume consolidado neste corte é de ${formatValue(rows.reduce((acc, r) => acc + (cleanNumericValue(r[activeMetricCol.key]) || 0), 0), activeMetricCol.type)}.`,
+        title: `Liderança: ${topCat.label} (${topPct.toFixed(1)}%)`,
+        description: `"${topCat.label}" lidera com ${formatValue(topCat.value, activeMetricCol.type)} (${topPct.toFixed(1)}% do volume consolidado).`,
         metricBadge: `${topPct.toFixed(0)}% líder`,
         importance: 'high',
         evidence: `Auditado em ${totalRows} registros na coluna "${primaryCategoryKey}"`,
         verifiableFacts: [
-          `1º Lugar: ${topCat.label} com ${formatValue(topCat.value, activeMetricCol.type)} (${topPct.toFixed(1)}%)`,
+          `1º Lugar: ${topCat.label} (${formatValue(topCat.value, activeMetricCol.type)})`,
           categoryAgg[1] ? `2º Lugar: ${categoryAgg[1].label} (${categoryAgg[1].percentage.toFixed(1)}%)` : ''
         ].filter(Boolean)
       });
@@ -2196,8 +2188,8 @@ export function generateExecutiveInsights(
         id: 'generic_anomalies_audit',
         category: 'quality_alert',
         type: 'risk',
-        title: `Auditoria IQR: ${anomalyReport.outlierCount} Registros Discrepantes`,
-        description: `Identificados ${anomalyReport.outlierCount} registros fora do intervalo normal (${anomalyReport.outlierPercentage.toFixed(1)}% dos dados) além de ${formatValue(anomalyReport.upperBound, activeMetricCol.type)}. A mediana apurada é de ${formatValue(anomalyReport.median, activeMetricCol.type)}.`,
+        title: `Outliers IQR: ${anomalyReport.outlierCount} Registros`,
+        description: `${anomalyReport.outlierCount} registros fora do intervalo normal (${anomalyReport.outlierPercentage.toFixed(1)}% dos dados) acima de ${formatValue(anomalyReport.upperBound, activeMetricCol.type)}.`,
         metricBadge: `${anomalyReport.outlierCount} anomalias`,
         importance: 'high',
         evidence: `IQR 1.5x na coluna "${activeMetricCol.label}"`
@@ -2211,8 +2203,8 @@ export function generateExecutiveInsights(
           id: 'generic_trend_audit',
           category: 'verified_fact',
           type: 'trend',
-          title: `Trajetória Cronológica: ${trend.formatted}`,
-          description: `No comparativo entre os períodos ${trend.periodLabel}, a métrica registrou variação de ${trend.formatted} (de ${formatValue(trend.previousPeriodValue, activeMetricCol.type)} para ${formatValue(trend.currentPeriodValue, activeMetricCol.type)}).`,
+          title: `Trajetória: ${trend.formatted}`,
+          description: `Variação de ${trend.formatted} no período (${formatValue(trend.previousPeriodValue, activeMetricCol.type)} → ${formatValue(trend.currentPeriodValue, activeMetricCol.type)}).`,
           metricBadge: trend.formatted,
           importance: 'medium',
           evidence: `Série temporal auditada`
@@ -2237,12 +2229,12 @@ export function generateExecutiveInsights(
       id: 'generic_governance_alert',
       category: 'quality_alert',
       type: 'risk',
-      title: 'Alerta de Qualidade: Governança dos Registros',
-      description: `Auditoria de estrutura em ${totalRows} linhas: monitorar o preenchimento contínuo das colunas categóricas e numéricas para evitar campos nulos que distorçam as agregações consolidadas.`,
+      title: 'Qualidade: Governança de Registros',
+      description: `Auditoria em ${totalRows} registros: monitorar campos nulos para preservar a acurácia das agregações consolidadas.`,
       metricBadge: 'Governança Ativa',
       importance: 'medium',
-      evidence: `Verificação de conformidade na planilha`,
-      verifiableFacts: [`Registros auditados: ${totalRows}`, 'Controle de qualidade ativo'],
+      evidence: `Verificação de integridade cadastral`,
+      verifiableFacts: [`Registros auditados: ${totalRows}`],
       businessImpact: 'Garantia de consistência estatística nos cruzamentos de dados.'
     });
   }
@@ -2253,8 +2245,8 @@ export function generateExecutiveInsights(
       category: 'suggested_opportunity',
       type: 'recommendation',
       isHypothesis: true,
-      title: 'Hipótese Comercial: Alavancagem dos Segmentos Líderes',
-      description: 'Hipótese estratégica: A concentração apurada no estrato principal sugere avaliar hipóteses de replicação dos processos vencedores para os grupos secundários, visando elevar a média geral. Esta é uma hipótese estratégica e não um fato comprovado pela planilha.',
+      title: 'Hipótese Comercial: Alavancagem do Top 1',
+      description: 'Replicar processos do segmento líder nos grupos secundários pode elevar a média geral de desempenho.',
       metricBadge: 'Hipótese Sugerida',
       hypothesisDisclaimer: 'Hipótese comercial sugerida — Requer avaliação e estudo de viabilidade interna.',
       importance: 'medium',

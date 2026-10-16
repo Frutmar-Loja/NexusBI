@@ -753,18 +753,6 @@ export default function App() {
               onToggleAnomalies={handleToggleAnomalies}
             />
 
-            {/* Executive Insights Panel with LLM Causal Storytelling */}
-            <ExecutiveInsightsPanel
-              insights={aiInsights || heuristicInsights}
-              archetypeLabel={autoAnalysis.archetypeLabel}
-              isLoadingAi={isLoadingAi}
-              onRefreshAi={handleTriggerAiInsights}
-              activeFilterName={activeFilterName}
-              isAiPowered={Boolean(aiInsights)}
-              extractedSummaries={sheetData.smartDetection?.summaries}
-              extractedNotes={sheetData.smartDetection?.notes}
-            />
-
             {/* KPI Cards Row with Warning Indicators and Growth Trends */}
             <KPIGrid
               kpis={dynamicKPIs}
@@ -831,6 +819,18 @@ export default function App() {
                 />
               </div>
             </div>
+
+            {/* Executive Insights Panel - Positioned at the bottom of the dashboard */}
+            <ExecutiveInsightsPanel
+              insights={aiInsights || heuristicInsights}
+              archetypeLabel={autoAnalysis.archetypeLabel}
+              isLoadingAi={isLoadingAi}
+              onRefreshAi={handleTriggerAiInsights}
+              activeFilterName={activeFilterName}
+              isAiPowered={Boolean(aiInsights)}
+              extractedSummaries={sheetData.smartDetection?.summaries}
+              extractedNotes={sheetData.smartDetection?.notes}
+            />
           </div>
         )}
 

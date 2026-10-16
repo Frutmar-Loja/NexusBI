@@ -81,6 +81,10 @@ DIRETRIZES FUNDAMENTAIS:
    - 'quality_alert' (Alertas de Qualidade): pendências cadastrais, campos nulos/vazios, ausência de validação fiscal externa (ex: Sintegra/Receita), documentos incompletos, anomalias e integridade de governança.
    - 'suggested_opportunity' (Oportunidades Sugeridas): hipóteses comerciais, estratégias de expansão e sugestões de processos. DEVE ser redigida explicitamente como uma HIPÓTESE comercial a ser validada pela diretoria (ex: "Hipótese Comercial: Avaliar viabilidade de expansão interestadual..."). Defina isHypothesis: true e inclua hypothesisDisclaimer.
 
+6. TEXTO CURTO, OBJETIVO E ALTAMENTE LEGÍVEL (MÁXIMO 1 A 2 FRASES CURTAS):
+   - A descrição DEVE ser concisa, direta e imediatamente legível em tela (até 25 palavras).
+   - PROIBIDO gerar blocos longos de texto, explicações prolixas ou parágrafos extensos. Vá direto aos números e à conclusão objetiva.
+
 ESTRUTURA DOS INSIGHTS (crie de 4 a 6 insights balanceados cobrindo as 3 categorias):
 - Pelo menos 2 'verified_fact'
 - Pelo menos 1 'quality_alert'
@@ -102,8 +106,8 @@ ESTRUTURA DOS INSIGHTS (crie de 4 a 6 insights balanceados cobrindo as 3 categor
                 description: 'verified_fact | quality_alert | suggested_opportunity'
               },
               type: { type: Type.STRING, description: 'highlight | trend | risk | recommendation' },
-              title: { type: Type.STRING, description: 'Título curto e objetivo com métrica (máx 6 palavras)' },
-              description: { type: Type.STRING, description: 'Explicação precisa e fundamentada (2 a 3 frases)' },
+              title: { type: Type.STRING, description: 'Título curto e objetivo com métrica (máx 5 a 6 palavras)' },
+              description: { type: Type.STRING, description: 'Texto curto, direto e objetivo (1 a 2 frases curtas, máx 25 palavras)' },
               metricBadge: { type: Type.STRING, description: 'Selo com métrica verificável, percentual ou tag de hipótese' },
               importance: { type: Type.STRING, description: 'high | medium' },
               evidence: { type: Type.STRING, description: 'Fonte ou fórmula comprovável nos dados' },

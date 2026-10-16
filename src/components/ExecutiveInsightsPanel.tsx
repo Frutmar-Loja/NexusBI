@@ -255,39 +255,39 @@ export const ExecutiveInsightsPanel: React.FC<ExecutiveInsightsPanelProps> = ({
 
           <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-neutral-500">
             <Info className="w-3 h-3 text-neutral-400" />
-            <span>Separação rigorosa entre comprovação matemática e hipóteses comerciais.</span>
+            <span>Fatos auditados e hipóteses comerciais delimitadas com objetividade.</span>
           </div>
         </div>
       )}
 
       {/* Expanded Insights Cards */}
       {isExpanded && (
-        <div className="p-3.5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 animate-in fade-in">
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 animate-in fade-in">
           {isLoadingAi ? (
             /* Skeleton loader */
-            [1, 2, 3, 4].map((i) => (
+            [1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="p-3.5 rounded-lg bg-white/[0.02] border border-white/[0.05] animate-pulse space-y-2.5"
+                className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] animate-pulse space-y-3 min-h-[140px]"
               >
                 <div className="flex justify-between items-center">
-                  <div className="h-3 bg-white/[0.08] rounded w-24"></div>
-                  <div className="h-3 bg-white/[0.08] rounded w-12"></div>
+                  <div className="h-4 bg-white/[0.08] rounded w-28"></div>
+                  <div className="h-4 bg-white/[0.08] rounded w-16"></div>
                 </div>
-                <div className="h-2.5 bg-white/[0.05] rounded w-full"></div>
-                <div className="h-2.5 bg-white/[0.05] rounded w-4/5"></div>
+                <div className="h-3 bg-white/[0.05] rounded w-full"></div>
+                <div className="h-3 bg-white/[0.05] rounded w-3/4"></div>
               </div>
             ))
           ) : filteredInsights.length === 0 ? (
-            <div className="col-span-full py-8 text-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.08]">
+            <div className="col-span-full py-8 text-center bg-white/[0.01] rounded-xl border border-dashed border-white/[0.08]">
               <p className="text-xs text-neutral-400">
-                Nenhum insight encontrado para a categoria selecionada.
+                Nenhum insight encontrado para o filtro de categoria selecionado.
               </p>
               <button
                 onClick={() => setSelectedCategory('all')}
-                className="mt-2 text-xs text-emerald-400 hover:underline"
+                className="mt-2 text-xs text-emerald-400 hover:underline font-medium"
               >
-                Ver todos os insights ({categoryCounts.all})
+                Exibir todos os insights ({categoryCounts.all})
               </button>
             </div>
           ) : (
@@ -298,100 +298,78 @@ export const ExecutiveInsightsPanel: React.FC<ExecutiveInsightsPanelProps> = ({
               return (
                 <div
                   key={item.id}
-                  className={`p-3.5 rounded-lg transition-all flex flex-col justify-between ${
+                  className={`p-4 rounded-xl transition-all flex flex-col justify-between ${
                     isQuality
-                      ? 'border border-amber-500/25 hover:border-amber-500/40 bg-amber-500/[0.02]'
+                      ? 'border border-amber-500/25 hover:border-amber-500/40 bg-amber-500/[0.03]'
                       : isOpportunity
-                      ? 'border border-sky-500/25 hover:border-sky-500/40 bg-sky-500/[0.02]'
-                      : 'border border-white/[0.07] hover:border-emerald-500/30 bg-white/[0.02]'
+                      ? 'border border-sky-500/25 hover:border-sky-500/40 bg-sky-500/[0.03]'
+                      : 'border border-white/[0.08] hover:border-emerald-500/35 bg-white/[0.02]'
                   }`}
                 >
-                  <div>
-                    {/* Category Label & Metric Badge */}
-                    <div className="flex items-center justify-between gap-1.5 mb-2.5">
+                  <div className="space-y-2.5">
+                    {/* Top Row: Category Badge + Metric Badge */}
+                    <div className="flex items-center justify-between gap-2">
                       {getCategoryBadge(item.category)}
                       {item.metricBadge && (
-                        <span className="text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-300 shrink-0 border border-white/[0.06]">
+                        <span className="text-[11px] font-mono tabular-nums px-2 py-0.5 rounded-md bg-white/[0.06] text-neutral-200 shrink-0 border border-white/[0.08]">
                           {item.metricBadge}
                         </span>
                       )}
                     </div>
 
                     {/* Card Title with Icon */}
-                    <div className="flex items-start gap-1.5 mb-2">
-                      <div className="mt-0.5">{getInsightIcon(item)}</div>
-                      <h4 className="text-xs font-semibold text-neutral-100 leading-snug">
+                    <div className="flex items-start gap-2">
+                      <div className="mt-0.5 shrink-0">{getInsightIcon(item)}</div>
+                      <h4 className="text-xs sm:text-sm font-semibold text-neutral-100 leading-snug">
                         {item.title}
                       </h4>
                     </div>
 
-                    {/* Description */}
-                    <p className="text-[11px] text-neutral-400 leading-relaxed font-normal">
+                    {/* Short Objective Description - clean, readable, no visual clutter */}
+                    <p className="text-xs text-neutral-300 leading-relaxed font-normal">
                       {item.description}
                     </p>
 
-                    {/* Specific Disclaimer for Suggested Opportunities */}
-                    {isOpportunity && (
-                      <div className="mt-2 text-[10px] bg-sky-500/10 border border-sky-500/20 rounded p-2 text-sky-200/90 flex items-start gap-1.5 font-normal">
-                        <Sparkles className="w-3 h-3 text-sky-400 shrink-0 mt-0.5" />
-                        <span className="leading-tight">
-                          <strong className="font-semibold text-sky-300">Hipótese Comercial: </strong>
-                          {item.hypothesisDisclaimer ||
-                            'Sugestão estratégica a ser validada pela diretoria; não é um fato garantido pela planilha.'}
-                        </span>
+                    {/* Compact Objective Highlights (Single Line max) */}
+                    {isOpportunity && item.hypothesisDisclaimer && (
+                      <div className="text-[11px] bg-sky-500/10 border border-sky-500/20 rounded-md px-2.5 py-1 text-sky-200/90 flex items-center gap-1.5 font-normal">
+                        <Sparkles className="w-3 h-3 text-sky-400 shrink-0" />
+                        <span className="truncate">{item.hypothesisDisclaimer}</span>
                       </div>
                     )}
 
-                    {/* Verifiable Facts List */}
-                    {item.verifiableFacts && item.verifiableFacts.length > 0 && (
-                      <div className="mt-2.5 space-y-1 bg-black/40 rounded-md p-2 border border-white/[0.04]">
-                        <div className="text-[9px] font-mono text-neutral-400 flex items-center gap-1 font-semibold uppercase tracking-wider">
-                          <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
-                          <span>Fatos Auditados:</span>
-                        </div>
-                        <div className="space-y-0.5">
-                          {item.verifiableFacts.map((fact, idx) => (
-                            <div key={idx} className="text-[10px] font-mono text-neutral-300 flex items-start gap-1">
-                              <span className="text-emerald-500/70 shrink-0 font-bold">✓</span>
-                              <span className="leading-tight">{fact}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Business Impact Note */}
-                    {item.businessImpact && (
-                      <div className="mt-2 text-[10px] leading-snug text-neutral-400">
-                        <span className="font-semibold text-neutral-300">Relevância ao Negócio: </span>
-                        <span>{item.businessImpact}</span>
-                      </div>
-                    )}
-
-                    {/* Actionable Step */}
                     {item.actionableStep && (
-                      <div className="mt-2 text-[10px] text-emerald-400/95 font-mono leading-snug flex items-start gap-1.5 bg-emerald-500/[0.06] border border-emerald-500/15 rounded px-2 py-1.5">
-                        <ArrowRight className="w-3 h-3 mt-0.5 text-emerald-400 shrink-0" />
-                        <span>{item.actionableStep}</span>
+                      <div className="text-[11px] text-emerald-300 font-mono leading-snug flex items-center gap-1.5 bg-emerald-500/[0.06] border border-emerald-500/15 rounded-md px-2.5 py-1">
+                        <ArrowRight className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span className="truncate">{item.actionableStep}</span>
+                      </div>
+                    )}
+
+                    {/* Key Verifiable Fact (Single crisp bullet when available and relevant) */}
+                    {item.verifiableFacts && item.verifiableFacts.length > 0 && !isOpportunity && !item.actionableStep && (
+                      <div className="text-[11px] font-mono text-neutral-400 flex items-center gap-1.5 pt-0.5">
+                        <span className="text-emerald-400 font-bold">✓</span>
+                        <span className="truncate">{item.verifiableFacts[0]}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Audit Evidence Footer */}
-                  <div className="mt-3 pt-2 border-t border-white/[0.04] text-[9px] text-neutral-500 flex items-center justify-between font-mono gap-1">
+                  <div className="mt-3 pt-2.5 border-t border-white/[0.05] text-[10px] text-neutral-400 flex items-center justify-between font-mono gap-1">
                     <span
-                      className="truncate text-neutral-400 flex items-center gap-1"
+                      className="truncate flex items-center gap-1.5 max-w-[220px]"
                       title={item.evidence || 'Verificado nos dados da planilha'}
                     >
-                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
                       <span className="truncate">{item.evidence || 'Auditado na planilha'}</span>
                     </span>
-                    <span className="shrink-0 text-neutral-500">
+
+                    <span className="shrink-0 text-neutral-400">
                       {item.category === 'verified_fact'
-                        ? 'Fato Comprovado'
+                        ? 'Comprovado'
                         : item.category === 'quality_alert'
-                        ? 'Auditoria de Qualidade'
-                        : 'Hipótese Comercial'}
+                        ? 'Alerta'
+                        : 'Hipótese'}
                     </span>
                   </div>
                 </div>
